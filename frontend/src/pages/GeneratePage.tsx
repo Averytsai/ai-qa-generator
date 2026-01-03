@@ -62,9 +62,11 @@ const GeneratePage = () => {
     } catch (error: any) {
       console.error('生成失敗：', error)
       console.error('錯誤詳情：', error?.response)
+      console.error('完整錯誤對象：', JSON.stringify(error, null, 2))
       
       let errorMessage = '生成失敗'
       
+      // 處理不同的錯誤格式
       if (error?.response?.data) {
         // 處理Pydantic驗證錯誤
         if (Array.isArray(error.response.data.detail)) {
@@ -74,12 +76,18 @@ const GeneratePage = () => {
           errorMessage = `驗證錯誤: ${errors}`
         } else if (typeof error.response.data.detail === 'string') {
           errorMessage = error.response.data.detail
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message
         }
       } else if (error?.message) {
         errorMessage = error.message
+      } else if (typeof error === 'string') {
+        errorMessage = error
       }
       
-      message.error(errorMessage)
+      // 顯示詳細錯誤信息
+      message.error(`生成失敗: ${errorMessage}`)
+      console.error('最終錯誤訊息：', errorMessage)
     } finally {
       setLoading(false)
     }

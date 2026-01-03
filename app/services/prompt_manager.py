@@ -292,7 +292,7 @@ class PromptManager:
         template: str,
         category: QACategory,
         topic: Optional[str] = None,
-        style: str = "专业",
+        style: str = "專業",
         **kwargs
     ) -> str:
         """
@@ -328,7 +328,7 @@ class PromptManager:
         self,
         category: QACategory,
         topic: Optional[str] = None,
-        style: str = "专业",
+        style: str = "專業",
         db: Optional[Session] = None,
         template_id: Optional[UUID] = None,
         **kwargs
