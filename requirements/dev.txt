@@ -1,0 +1,18 @@
+# 包含基礎依賴
+-r base.txt
+
+# 測試
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+
+# 程式碼品質
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.0
+isort==5.12.0
+pylint==3.0.2
+
+# 開發工具
+ipython==8.18.1
+
