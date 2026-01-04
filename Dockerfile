@@ -20,9 +20,6 @@ RUN pip install --upgrade pip && \
 # 复制应用代码
 COPY . .
 
-# 暴露端口
-EXPOSE $PORT
-
-# 启动命令（使用环境变量 PORT）
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}
+# 启动命令（Railway 会自动设置 PORT 环境变量）
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
 
