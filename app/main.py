@@ -25,17 +25,22 @@ app = FastAPI(
 # 解析允許的來源
 if settings.cors_origins == "*" or settings.debug:
     # 開發環境或設置為 * 時允許所有來源
+    # 注意：當 allow_credentials=True 時，不能使用 ["*"]
+    # 所以開發環境也使用具體的域名或允許所有但不使用 credentials
     allowed_origins = ["*"]
+    use_credentials = False
 else:
     # 生產環境：從環境變數讀取允許的域名
-    allowed_origins = [origin.strip() for origin in settings.cors_origins.split(",")]
+    allowed_origins = [origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()]
+    use_credentials = True
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_credentials=use_credentials,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # 添加请求日志中间件
