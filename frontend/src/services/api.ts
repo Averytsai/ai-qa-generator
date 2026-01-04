@@ -121,12 +121,30 @@ export const generatorApi = {
     // 从数据库API获取历史记录
     const queryParams = new URLSearchParams();
     if (params?.category) queryParams.append('category', params.category);
-    if (params?.status) queryParams.append('status', params.status as string);
+    if (params?.status) queryParams.append('status', params.status as string); // QAStatus枚举值已经是中文，如"已通過"
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.page_size) queryParams.append('page_size', params.page_size.toString());
 
-    const response: any = await api.get(`/history?${queryParams.toString()}`);
-    return response?.data || { items: [], total: 0, page: 1, page_size: 10, total_pages: 0 };
+    try {
+      const response: any = await api.get(`/history?${queryParams.toString()}`);
+      console.log('getHistory API響應：', response);
+      
+      // API返回格式：{ success: true, data: { items: [], total: 0, ... } }
+      if (response?.success && response?.data) {
+        return response.data;
+      }
+      
+      // 向后兼容：如果直接返回data
+      if (response?.data && !response.success) {
+        return response.data;
+      }
+      
+      console.warn('getHistory API響應格式異常：', response);
+      return { items: [], total: 0, page: params?.page || 1, page_size: params?.page_size || 10, total_pages: 0 };
+    } catch (error: any) {
+      console.error('getHistory API錯誤：', error);
+      throw error;
+    }
   },
 };
 

@@ -41,12 +41,13 @@ const KnowledgeBasePage = () => {
     setLoading(true)
     try {
       const response = await generatorApi.getHistory({
-        status: QAStatus.APPROVED,
+        status: QAStatus.APPROVED, // "已通過"
         category: selectedCategory as QACategory,
         page: 1,
         page_size: 100,
       })
-      if (response.items) {
+      console.log('知識庫API響應：', response)
+      if (response && response.items) {
         let filtered = response.items
         if (searchText) {
           filtered = filtered.filter(
@@ -56,9 +57,16 @@ const KnowledgeBasePage = () => {
           )
         }
         setQaPairs(filtered)
+        console.log(`成功載入 ${filtered.length} 條知識庫記錄`)
+      } else {
+        console.warn('API響應格式異常：', response)
+        setQaPairs([])
       }
     } catch (error: any) {
-      message.error('獲取知識庫失敗')
+      console.error('獲取知識庫失敗：', error)
+      console.error('錯誤詳情：', error?.response?.data || error?.message)
+      message.error(`獲取知識庫失敗：${error?.response?.data?.error || error?.message || '未知錯誤'}`)
+      setQaPairs([])
     } finally {
       setLoading(false)
     }
