@@ -249,10 +249,8 @@ export const feedbackApi = {
         } else if (action === 'reject' || action === ReviewAction.REJECT) {
           updatedItem.status = QAStatusEnum.REJECTED;
         } else if (action === 'modify' || action === ReviewAction.MODIFY) {
-          // 修改后，如果用户选择通过，状态应该是 APPROVED，否则是 MODIFIED
-          // 但根据业务逻辑，修改后通常需要再次审查，所以先设为 MODIFIED
-          // 如果修改后直接通过，可以在这里处理
-          updatedItem.status = QAStatusEnum.MODIFIED;
+          // 修改后，视为已通过人工审查，状态设为 APPROVED，可以加入知识库
+          updatedItem.status = QAStatusEnum.APPROVED;
           if (request.modified_question) {
             updatedItem.question = request.modified_question;
           }
