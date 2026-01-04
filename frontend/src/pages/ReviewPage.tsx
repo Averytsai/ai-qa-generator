@@ -61,6 +61,19 @@ const ReviewPage = () => {
       // 如果 result 有 data 属性，使用 data，否则直接使用 result
       const reviewData = (result && typeof result === 'object' && 'data' in result) ? result.data : result;
       setReviewResult(reviewData)
+      
+      // 更新 localStorage 中的 reviewer_score
+      const stored = localStorage.getItem('qa_history');
+      if (stored) {
+        const history: QAPair[] = JSON.parse(stored);
+        const index = history.findIndex(item => item.id === qaPair.id);
+        if (index !== -1) {
+          history[index].reviewer_score = reviewData.reviewer_score || null;
+          history[index].reviewed_at = reviewData.reviewed_at || new Date().toISOString();
+          localStorage.setItem('qa_history', JSON.stringify(history));
+        }
+      }
+      
       message.success('審查結果完成')
       loadQAPairs() // 重新載入列表
     } catch (error: any) {
@@ -88,6 +101,23 @@ const ReviewPage = () => {
       }))
       
       const result: any = await reviewerApi.batchReview(qaPairsForReview)
+      
+      // 更新 localStorage 中的 reviewer_score
+      if (result.data?.reviews && Array.isArray(result.data.reviews)) {
+        const stored = localStorage.getItem('qa_history');
+        if (stored) {
+          const history: QAPair[] = JSON.parse(stored);
+          result.data.reviews.forEach((review: any) => {
+            const index = history.findIndex(item => item.id === review.qa_pair_id);
+            if (index !== -1) {
+              history[index].reviewer_score = review.reviewer_score || null;
+              history[index].reviewed_at = review.reviewed_at || new Date().toISOString();
+            }
+          });
+          localStorage.setItem('qa_history', JSON.stringify(history));
+        }
+      }
+      
       message.success(`批量審查結果完成：通過 ${result.data?.passed || 0}，總數 ${result.data?.total || 0}`)
       setSelectedRowKeys([])
       loadQAPairs()
@@ -121,10 +151,10 @@ const ReviewPage = () => {
       render: (category: QACategory) => <Tag>{category}</Tag>,
     },
     {
-      title: '狀態',
+      title: '人工審核結果',
       dataIndex: 'status',
       key: 'status',
-      width: 100,
+      width: 120,
       render: (status: string) => {
         const colorMap: Record<string, string> = {
           待審查: 'orange',
@@ -136,11 +166,16 @@ const ReviewPage = () => {
       },
     },
     {
-      title: '審查評分',
+      title: 'AI審查評分',
       dataIndex: 'reviewer_score',
       key: 'reviewer_score',
-      width: 100,
-      render: (score: number | null) => score ?? '-',
+      width: 120,
+      render: (score: number | null) => {
+        if (score === null || score === undefined) {
+          return '-'
+        }
+        return `${score} / 100`
+      },
     },
     {
       title: '操作',
@@ -223,19 +258,19 @@ const ReviewPage = () => {
             <h3>審查結果</h3>
             <Space direction="vertical" style={{ width: '100%' }} size="large">
               <div>
-                <strong>綜合評分：</strong>
+                <strong>AI綜合評分：</strong>
                 <Progress
-                  percent={reviewResult.reviewer_score}
+                  percent={reviewResult.reviewer_score || 0}
                   status={
-                    reviewResult.reviewer_score >= 80
+                    (reviewResult.reviewer_score || 0) >= 80
                       ? 'success'
-                      : reviewResult.reviewer_score >= 60
+                      : (reviewResult.reviewer_score || 0) >= 60
                       ? 'normal'
                       : 'exception'
                   }
                 />
                 <span style={{ marginLeft: 8 }}>
-                  {reviewResult.reviewer_score} / 100
+                  {reviewResult.reviewer_score || 0} / 100
                 </span>
               </div>
 
