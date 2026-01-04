@@ -1,17 +1,14 @@
-// #region agent log
-fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'qa-pairs.ts:1',message:'qa-pairs.ts module loading',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-// #endregion
-
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // #region agent log
-fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'qa-pairs.ts:3',message:'Before importing db.js',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+console.log('[qa-pairs.ts] Module loading started');
+console.log('[qa-pairs.ts] Before importing db.js');
 // #endregion
 
 import { query } from './utils/db.js';
 
 // #region agent log
-fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'qa-pairs.ts:5',message:'db.js imported successfully',data:{hasQuery:typeof query === 'function'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+console.log('[qa-pairs.ts] db.js imported successfully', { hasQuery: typeof query === 'function' });
 // #endregion
 
 // CORS 处理
