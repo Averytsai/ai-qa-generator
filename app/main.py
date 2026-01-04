@@ -22,9 +22,17 @@ app = FastAPI(
 )
 
 # 配置 CORS
+# 解析允許的來源
+if settings.cors_origins == "*" or settings.debug:
+    # 開發環境或設置為 * 時允許所有來源
+    allowed_origins = ["*"]
+else:
+    # 生產環境：從環境變數讀取允許的域名
+    allowed_origins = [origin.strip() for origin in settings.cors_origins.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.debug else [],  # 開發環境允許所有來源
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

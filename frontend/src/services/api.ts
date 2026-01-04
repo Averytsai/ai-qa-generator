@@ -12,7 +12,10 @@ import type {
   QAStatus,
 } from '../types';
 
-const API_BASE_URL = '/api/v1';
+// 根据环境变量配置 API 地址
+// 开发环境：使用相对路径，Vite 会代理到本地后端
+// 生产环境：使用环境变量 VITE_API_BASE_URL，如果没有则使用相对路径
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
