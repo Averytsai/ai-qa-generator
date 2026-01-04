@@ -177,7 +177,7 @@ const GeneratePage = () => {
 
   return (
     <div>
-      <Card title="生成問答對" style={{ marginBottom: 24 }}>
+      <Card title="生成問答對(此AI尚未有Glows流程知識，生成問答以專業知識為主，ex. KVM是什麼)" style={{ marginBottom: 24 }}>
         <Form
           form={form}
           layout="vertical"
