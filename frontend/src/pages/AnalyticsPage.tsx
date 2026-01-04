@@ -17,7 +17,7 @@ const AnalyticsPage = () => {
     average_score: 0,
   })
   const [categoryStats, setCategoryStats] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
 
   useEffect(() => {
     loadStats()

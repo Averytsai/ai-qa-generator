@@ -8,7 +8,6 @@ import type {
   GenerateRequest,
   ReviewResponse,
   FeedbackSubmitRequest,
-  ApiResponse,
   QACategory,
   QAStatus,
 } from '../types';

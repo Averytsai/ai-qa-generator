@@ -10,7 +10,6 @@ import {
   Table,
   Tag,
   message,
-  Spin,
 } from 'antd'
 import { generatorApi } from '../services/api'
 import { QACategory, QAPair } from '../types'
@@ -47,7 +46,7 @@ const GeneratePage = () => {
       
       console.log('發送請求數據：', requestData)
       
-      const response = await generatorApi.generate(requestData)
+      const response: any = await generatorApi.generate(requestData)
 
       console.log('生成響應：', response)
 

@@ -191,9 +191,6 @@ const FeedbackPage = () => {
               const action = getFieldValue('action')
               if (action === ReviewAction.MODIFY) {
                 // 當選擇修改時，自動填充原始內容
-                const currentQuestion = form.getFieldValue('modified_question') || currentQa?.question || ''
-                const currentAnswer = form.getFieldValue('modified_answer') || currentQa?.answer || ''
-                
                 // 如果欄位為空，設置初始值
                 if (!form.getFieldValue('modified_question') && currentQa?.question) {
                   form.setFieldValue('modified_question', currentQa.question)

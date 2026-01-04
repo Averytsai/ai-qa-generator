@@ -69,8 +69,8 @@ const ReviewPage = () => {
 
     setReviewing(true)
     try {
-      const result = await reviewerApi.batchReview(selectedRowKeys)
-      message.success(`批量審查結果完成：通過 ${result.summary.passed}，失敗 ${result.summary.failed}`)
+      const result: any = await reviewerApi.batchReview(selectedRowKeys)
+      message.success(`批量審查結果完成：通過 ${result.summary?.passed || 0}，失敗 ${result.summary?.failed || 0}`)
       setSelectedRowKeys([])
       loadQAPairs()
     } catch (error: any) {
