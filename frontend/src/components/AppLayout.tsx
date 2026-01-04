@@ -33,7 +33,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     {
       key: '/knowledge',
       icon: <DatabaseOutlined />,
-      label: '知識庫',
+      label: '知識庫(已審查)',
     },
     {
       key: '/analytics',

@@ -106,7 +106,7 @@ const KnowledgeBasePage = () => {
   return (
     <div>
       <Card
-        title="知識庫"
+        title="知識庫(已審查)"
         extra={
           <Space>
             <Select

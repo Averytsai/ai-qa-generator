@@ -131,7 +131,7 @@ const FeedbackPage = () => {
   return (
     <div>
       <Card
-        title="待人工審查列表(經人工審核後才會加入資料庫)"
+        title="待人工審查列表(經審核後才會加入知識庫)"
         extra={
           <Button onClick={loadPendingQAs} loading={loading}>
             刷新
