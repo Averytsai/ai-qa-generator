@@ -1,5 +1,18 @@
+// #region agent log
+fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'qa-pairs.ts:1',message:'qa-pairs.ts module loading',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+// #endregion
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+// #region agent log
+fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'qa-pairs.ts:3',message:'Before importing db.js',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+// #endregion
+
 import { query } from './utils/db.js';
+
+// #region agent log
+fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'qa-pairs.ts:5',message:'db.js imported successfully',data:{hasQuery:typeof query === 'function'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+// #endregion
 
 // CORS 处理
 function setCorsHeaders(res: VercelResponse) {
@@ -9,6 +22,10 @@ function setCorsHeaders(res: VercelResponse) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'qa-pairs.ts:11',message:'qa-pairs handler called',data:{method:req.method,url:req.url,query:req.query},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+  // #endregion
+  
   setCorsHeaders(res);
 
   if (req.method === 'OPTIONS') {
@@ -16,6 +33,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'qa-pairs.ts:19',message:'Before database query',data:{method:req.method},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
     // GET - 获取问答对列表
     if (req.method === 'GET') {
       const { category, status, page = '1', page_size = '10' } = req.query;
@@ -194,6 +214,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error: any) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'qa-pairs.ts:196',message:'Error caught in qa-pairs handler',data:{error:error.message,code:error.code,stack:error.stack?.substring(0,300)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
+    
     console.error('❌ QA Pairs API错误:', {
       message: error.message,
       code: error.code,
