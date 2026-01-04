@@ -1,0 +1,43 @@
+# Vercel ignore file
+# 排除不需要部署的文件
+
+# Python相关
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# 数据库相关
+*.db
+*.sqlite
+*.sqlite3
+database/*.sh
+database/*.js
+database/*.md
+
+# 测试文件
+test_*.js
+tests/
+
+# 日志
+*.log
+logs/
+
+# 临时文件
+*.tmp
+*.bak
+
+# 文档
+*.md
+!README.md
+
+# 脚本
+scripts/
+
