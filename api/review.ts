@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import OpenAI from 'openai';
+import { query } from './utils/db';
 
 // 初始化 OpenAI 客户端
 const openai = new OpenAI({
@@ -107,11 +108,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       };
     }
 
+    const reviewerScore = reviewResult.overall_score || 75;
+    const reviewedAt = new Date().toISOString();
+
+    // 更新数据库中的审查评分
+    if (qa_pair_id) {
+      try {
+        await query(
+          'UPDATE qa_pairs SET reviewer_score = $1, reviewed_at = $2, status = $3 WHERE id = $4',
+          [reviewerScore, reviewedAt, reviewResult.passed !== false ? '已審查' : '待審查', qa_pair_id]
+        );
+      } catch (dbError) {
+        console.error('更新数据库失败:', dbError);
+        // 继续返回结果，即使数据库更新失败
+      }
+    }
+
     return res.status(200).json({
       success: true,
       data: {
         qa_pair_id: qa_pair_id || `qa-${Date.now()}`,
-        reviewer_score: reviewResult.overall_score || 75,
+        reviewer_score: reviewerScore,
         scores: {
           accuracy: reviewResult.accuracy || 75,
           completeness: reviewResult.completeness || 75,
@@ -121,7 +138,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         },
         suggestions: reviewResult.suggestions || [],
         passed: reviewResult.passed !== false,
-        reviewed_at: new Date().toISOString(),
+        reviewed_at: reviewedAt,
       },
     });
   } catch (error: any) {

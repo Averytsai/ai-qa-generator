@@ -98,11 +98,12 @@ export const categoryApi = {
  */
 export const generatorApi = {
   /**
-   * 生成問答對
+   * 生成問答對（已自动保存到数据库）
    */
   generate: async (request: GenerateRequest) => {
     try {
       const result = await api.post('/generate', request);
+      // generate API已经自动保存到数据库，直接返回结果
       return result;
     } catch (error: any) {
       throw error;
@@ -110,7 +111,7 @@ export const generatorApi = {
   },
 
   /**
-   * 獲取生成歷史（前端本地存储）
+   * 獲取生成歷史（从数据库获取）
    */
   getHistory: async (params?: {
     category?: QACategory;
@@ -118,63 +119,15 @@ export const generatorApi = {
     page?: number;
     page_size?: number;
   }): Promise<{ items: QAPair[]; total: number; page: number; page_size: number; total_pages: number }> => {
-    // 从 localStorage 读取历史记录
-    const stored = localStorage.getItem('qa_history');
-    let allItems: QAPair[] = stored ? JSON.parse(stored) : [];
-    
-    // 过滤
-    if (params?.category) {
-      allItems = allItems.filter(item => item.category === params.category);
-    }
-    if (params?.status) {
-      const statusFilter = params.status as any;
-      allItems = allItems.filter(item => {
-        const itemStatus = item.status as any;
-        // 支持多种状态格式比较
-        if (itemStatus === statusFilter) {
-          return true;
-        }
-        // 字符串比较
-        if (String(itemStatus) === String(statusFilter)) {
-          return true;
-        }
-        // 枚举值比较
-        if (statusFilter === QAStatusEnum.APPROVED) {
-          return itemStatus === QAStatusEnum.APPROVED ||
-                 itemStatus === '已通過' ||
-                 itemStatus === 'approved' ||
-                 String(itemStatus).toLowerCase() === 'approved';
-        }
-        if (statusFilter === QAStatusEnum.REJECTED) {
-          return itemStatus === QAStatusEnum.REJECTED ||
-                 itemStatus === '已拒絕' ||
-                 itemStatus === 'rejected' ||
-                 String(itemStatus).toLowerCase() === 'rejected';
-        }
-        if (statusFilter === QAStatusEnum.MODIFIED) {
-          return itemStatus === QAStatusEnum.MODIFIED ||
-                 itemStatus === '已修改' ||
-                 itemStatus === 'modified' ||
-                 String(itemStatus).toLowerCase() === 'modified';
-        }
-        return false;
-      });
-    }
-    
-    // 分页
-    const page = params?.page || 1;
-    const pageSize = params?.page_size || 10;
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    const items = allItems.slice(start, end);
-    
-    return {
-      items,
-      total: allItems.length,
-      page,
-      page_size: pageSize,
-      total_pages: Math.ceil(allItems.length / pageSize),
-    };
+    // 从数据库API获取历史记录
+    const queryParams = new URLSearchParams();
+    if (params?.category) queryParams.append('category', params.category);
+    if (params?.status) queryParams.append('status', params.status as string);
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.page_size) queryParams.append('page_size', params.page_size.toString());
+
+    const response: any = await api.get(`/history?${queryParams.toString()}`);
+    return response?.data || { items: [], total: 0, page: 1, page_size: 10, total_pages: 0 };
   },
 };
 
@@ -220,52 +173,12 @@ export const reviewerApi = {
  */
 export const feedbackApi = {
   /**
-   * 提交反饋（前端本地存储）
+   * 提交反饋（保存到数据库）
    */
   submit: async (request: FeedbackSubmitRequest) => {
-    // 保存反馈到 localStorage
-    const stored = localStorage.getItem('qa_feedback');
-    const feedbacks = stored ? JSON.parse(stored) : [];
-    feedbacks.push({
-      ...request,
-      id: `feedback-${Date.now()}`,
-      created_at: new Date().toISOString(),
-    });
-    localStorage.setItem('qa_feedback', JSON.stringify(feedbacks));
-    
-    // 更新 qa_history 中对应项的状态
-    const historyStored = localStorage.getItem('qa_history');
-    if (historyStored) {
-      const history: QAPair[] = JSON.parse(historyStored);
-      const index = history.findIndex(item => item.id === request.qa_pair_id);
-      
-      if (index !== -1) {
-        const updatedItem = { ...history[index] };
-        
-        // 根据操作类型更新状态和内容
-        const action = request.action as any;
-        if (action === 'approve' || action === ReviewAction.APPROVE) {
-          updatedItem.status = QAStatusEnum.APPROVED;
-        } else if (action === 'reject' || action === ReviewAction.REJECT) {
-          updatedItem.status = QAStatusEnum.REJECTED;
-        } else if (action === 'modify' || action === ReviewAction.MODIFY) {
-          // 修改后，视为已通过人工审查，状态设为 APPROVED，可以加入知识库
-          updatedItem.status = QAStatusEnum.APPROVED;
-          if (request.modified_question) {
-            updatedItem.question = request.modified_question;
-          }
-          if (request.modified_answer) {
-            updatedItem.answer = request.modified_answer;
-          }
-        }
-        
-        updatedItem.updated_at = new Date().toISOString();
-        history[index] = updatedItem;
-        localStorage.setItem('qa_history', JSON.stringify(history));
-      }
-    }
-    
-    return {
+    // 调用数据库API提交反馈
+    const response: any = await api.post('/feedbacks', request);
+    return response?.data || {
       success: true,
       data: {
         feedback_id: `feedback-${Date.now()}`,
@@ -275,44 +188,22 @@ export const feedbackApi = {
   },
 
   /**
-   * 獲取待審查列表（从本地存储）
+   * 獲取待審查列表（从数据库获取）
    */
   getPending: async (params?: {
     category?: QACategory;
     page?: number;
     page_size?: number;
   }): Promise<{ items: QAPair[]; total: number; page: number; page_size: number; total_pages: number }> => {
-    const stored = localStorage.getItem('qa_history');
-    let allItems: QAPair[] = stored ? JSON.parse(stored) : [];
-    
-    // 只返回 pending 状态的
-    allItems = allItems.filter(item => {
-      const status = item.status as any;
-      return status === QAStatusEnum.PENDING_REVIEW || 
-             status === 'pending' || 
-             status === '待審查' ||
-             String(status) === 'pending';
-    });
-    
-    // 过滤
-    if (params?.category) {
-      allItems = allItems.filter(item => item.category === params.category);
-    }
-    
-    // 分页
-    const page = params?.page || 1;
-    const pageSize = params?.page_size || 10;
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    const items = allItems.slice(start, end);
-    
-    return {
-      items,
-      total: allItems.length,
-      page,
-      page_size: pageSize,
-      total_pages: Math.ceil(allItems.length / pageSize),
-    };
+    // 从数据库API获取待审查列表
+    const queryParams = new URLSearchParams();
+    queryParams.append('status', '待審查'); // 只获取待审查状态
+    if (params?.category) queryParams.append('category', params.category);
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.page_size) queryParams.append('page_size', params.page_size.toString());
+
+    const response: any = await api.get(`/qa-pairs?${queryParams.toString()}`);
+    return response?.data || { items: [], total: 0, page: 1, page_size: 10, total_pages: 0 };
   },
 };
 

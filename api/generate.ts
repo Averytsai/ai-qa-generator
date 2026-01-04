@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import OpenAI from 'openai';
+import { query } from './utils/db';
 
 // 初始化 OpenAI 客户端
 const openai = new OpenAI({
@@ -236,15 +237,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const { question, answer } = parseQAPair(content);
+      
+      // 保存到数据库
+      const sql = `
+        INSERT INTO qa_pairs (question, answer, category, status)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *
+      `;
+      const result = await query(sql, [question, answer, category, '待審查']);
+      const savedQAPair = result.rows[0];
+      
       qaPairs.push({
-        id: `qa-${Date.now()}-${i}`,
-        question,
-        answer,
-        category,
-        topic: topic || null,
-        style: style || '專業',
-        status: 'pending',
-        created_at: new Date().toISOString(),
+        id: savedQAPair.id,
+        question: savedQAPair.question,
+        answer: savedQAPair.answer,
+        category: savedQAPair.category,
+        status: savedQAPair.status,
+        reviewer_score: savedQAPair.reviewer_score,
+        prompt_template_id: savedQAPair.prompt_template_id,
+        created_at: savedQAPair.created_at?.toISOString() || new Date().toISOString(),
+        updated_at: savedQAPair.updated_at?.toISOString() || new Date().toISOString(),
+        reviewed_at: savedQAPair.reviewed_at?.toISOString() || null,
       });
     }
 
