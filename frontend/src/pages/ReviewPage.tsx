@@ -187,7 +187,7 @@ const ReviewPage = () => {
           onClick={() => handleReview(record)}
           disabled={reviewing}
         >
-          審查結果
+          AI審查
         </Button>
       ),
     },
@@ -231,7 +231,7 @@ const ReviewPage = () => {
       </Card>
 
       <Modal
-        title="審查結果"
+        title="AI審查"
         open={reviewModalVisible}
         onCancel={() => setReviewModalVisible(false)}
         footer={null}
@@ -255,7 +255,7 @@ const ReviewPage = () => {
 
         {reviewResult && (
           <div>
-            <h3>審查結果</h3>
+            <h3>AI審查</h3>
             <Space direction="vertical" style={{ width: '100%' }} size="large">
               <div>
                 <strong>AI綜合評分：</strong>
@@ -301,7 +301,7 @@ const ReviewPage = () => {
               </div>
 
               <div>
-                <strong>審查結果：</strong>
+                <strong>AI審查：</strong>
                 <Tag color={reviewResult.passed ? 'green' : 'red'}>
                   {reviewResult.passed ? '通過' : '未通過'}
                 </Tag>
