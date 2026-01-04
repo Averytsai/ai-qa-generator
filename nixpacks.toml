@@ -11,5 +11,5 @@ cmds = [
 cmds = []
 
 [start]
-cmd = "./start.sh"
+cmd = "python run.py"
 
