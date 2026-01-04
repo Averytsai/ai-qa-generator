@@ -15,10 +15,7 @@
     "noImplicitAny": false,
     "allowJs": true,
     "types": ["node"],
-    "baseUrl": ".",
-    "paths": {
-      "@vercel/node": ["./node_modules/@vercel/node"]
-    }
+    "typeRoots": ["./node_modules/@types", "./node_modules"]
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules"]
