@@ -1,5 +1,11 @@
 {
-  "devDependencies": {
-    "pg": "^8.16.3"
-  }
+  "name": "qa-generator",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "cd api && npm install && cd ../frontend && npm install",
+    "build": "cd frontend && npm run build"
+  },
+  "dependencies": {},
+  "devDependencies": {}
 }
