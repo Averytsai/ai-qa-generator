@@ -21,5 +21,6 @@ RUN pip install --upgrade pip && \
 COPY . .
 
 # 启动命令（Railway 会自动设置 PORT 环境变量）
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
+# 使用 shell 格式确保环境变量正确解析
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}
 
