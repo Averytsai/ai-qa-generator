@@ -10,7 +10,6 @@ import type {
   QACategory,
   QAStatus,
 } from '../types';
-import { QAStatus as QAStatusEnum, ReviewAction } from '../types';
 
 // 使用 Vercel Functions（相对路径）
 // 开发环境：Vite 代理到本地（如果需要本地测试）
