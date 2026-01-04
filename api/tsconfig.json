@@ -14,8 +14,7 @@
     "noEmit": true,
     "noImplicitAny": false,
     "allowJs": true,
-    "types": ["node"],
-    "typeRoots": ["./node_modules/@types", "./node_modules"]
+    "types": ["node"]
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules"]

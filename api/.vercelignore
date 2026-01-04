@@ -1,0 +1,6 @@
+# Vercel ignore file for API directory
+# This file tells Vercel what to ignore when deploying
+
+# Don't ignore anything - we want all files to be deployed
+# But we can use this to ensure proper structure
+
