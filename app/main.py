@@ -46,35 +46,20 @@ app.add_middleware(
 # 添加请求日志中间件
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    # #region agent log
-    import json
-    with open('/Users/caimingzhi/Desktop/企業app store/AVERY AI專案/AI 資料產生助手/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"main.py:middleware","message":"Request received","data":{"method":request.method,"url":str(request.url),"path":request.url.path,"headers":dict(request.headers)},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}) + '\n')
-    # #endregion
+    """请求日志中间件"""
+    logger.debug(f"收到请求: {request.method} {request.url.path}")
     try:
         response = await call_next(request)
-        # #region agent log
-        with open('/Users/caimingzhi/Desktop/企業app store/AVERY AI專案/AI 資料產生助手/.cursor/debug.log', 'a') as f:
-            f.write(json.dumps({"location":"main.py:middleware","message":"Response sent","data":{"statusCode":response.status_code,"headers":dict(response.headers)},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}) + '\n')
-        # #endregion
+        logger.debug(f"响应发送: {response.status_code}")
         return response
     except Exception as e:
-        # #region agent log
-        import traceback
-        with open('/Users/caimingzhi/Desktop/企業app store/AVERY AI專案/AI 資料產生助手/.cursor/debug.log', 'a') as f:
-            f.write(json.dumps({"location":"main.py:middleware","message":"Middleware exception","data":{"errorType":type(e).__name__,"errorMessage":str(e),"traceback":traceback.format_exc()},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}) + '\n')
-        # #endregion
+        logger.error(f"中间件异常: {e}", exc_info=True)
         raise
 
 # 全局异常处理器
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    # #region agent log
-    import json
-    import traceback
-    with open('/Users/caimingzhi/Desktop/企業app store/AVERY AI專案/AI 資料產生助手/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"main.py:exception_handler","message":"Global exception caught","data":{"errorType":type(exc).__name__,"errorMessage":str(exc),"traceback":traceback.format_exc(),"path":request.url.path},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}) + '\n')
-    # #endregion
+    """全局异常处理器"""
     logger.error(f"未處理的異常: {exc}", exc_info=True)
     return JSONResponse(
         status_code=500,
@@ -83,11 +68,8 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    # #region agent log
-    import json
-    with open('/Users/caimingzhi/Desktop/企業app store/AVERY AI專案/AI 資料產生助手/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"main.py:http_exception_handler","message":"HTTP exception","data":{"statusCode":exc.status_code,"detail":exc.detail,"path":request.url.path},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}) + '\n')
-    # #endregion
+    """HTTP 异常处理器"""
+    logger.warning(f"HTTP 异常: {exc.status_code} - {exc.detail}")
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.detail}
@@ -95,11 +77,8 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    # #region agent log
-    import json
-    with open('/Users/caimingzhi/Desktop/企業app store/AVERY AI專案/AI 資料產生助手/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"location":"main.py:validation_exception_handler","message":"Validation error","data":{"errors":exc.errors(),"body":exc.body,"path":request.url.path},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}) + '\n')
-    # #endregion
+    """请求验证异常处理器"""
+    logger.warning(f"请求验证失败: {exc.errors()}")
     return JSONResponse(
         status_code=422,
         content={"detail": exc.errors(), "body": exc.body}
@@ -118,6 +97,13 @@ async def startup_event():
     logger.info(f"應用程式啟動: {settings.app_name}")
     logger.info(f"環境: {settings.app_env}")
     logger.info(f"除錯模式: {settings.debug}")
+    
+    # 检查数据库连接
+    from app.services.database import check_db_connection
+    if check_db_connection():
+        logger.info("資料庫連接檢查成功")
+    else:
+        logger.warning("資料庫連接檢查失敗，但應用繼續啟動")
 
 
 @app.on_event("shutdown")
