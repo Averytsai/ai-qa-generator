@@ -11,5 +11,5 @@ cmds = [
 cmds = []
 
 [start]
-cmd = "sh -c 'uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}'"
+cmd = "./start.sh"
 
