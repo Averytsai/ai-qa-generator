@@ -202,7 +202,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // 检查 OpenAI API Key
     if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: 'OpenAI API Key 未配置' });
+      console.error('❌ OPENAI_API_KEY 环境变量未设置！');
+      console.error('请在 Vercel Dashboard 中设置 OPENAI_API_KEY 环境变量');
+      return res.status(500).json({ 
+        error: 'OpenAI API Key 未配置。请在 Vercel Dashboard 的 Environment Variables 中设置 OPENAI_API_KEY。' 
+      });
     }
 
     // 获取提示词模板
@@ -269,9 +273,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     });
   } catch (error: any) {
-    console.error('生成问答对失败:', error);
+    console.error('❌ 生成问答对失败:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail,
+      stack: error.stack?.substring(0, 500)
+    });
+    
+    // 如果是数据库连接错误
+    if (error.message?.includes('DATABASE_URL') || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+      return res.status(500).json({
+        error: '数据库连接失败。请检查 DATABASE_URL 环境变量是否正确设置。',
+        details: error.message
+      });
+    }
+    
+    // 如果是OpenAI API错误
+    if (error.message?.includes('OpenAI') || error.status === 401 || error.status === 403) {
+      return res.status(500).json({
+        error: 'OpenAI API 调用失败。请检查 OPENAI_API_KEY 环境变量是否正确设置。',
+        details: error.message
+      });
+    }
+    
     return res.status(500).json({
       error: error.message || '生成问答对失败',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }
