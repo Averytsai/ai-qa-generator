@@ -8,10 +8,22 @@ const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://user:password@tw-
 console.log('🔍 测试数据库连接...');
 console.log('连接字符串:', DATABASE_URL.replace(/password:[^@]+@/, 'password:***@')); // 隐藏密码
 
+// 解析连接字符串，根据sslmode调整SSL配置
+const url = new URL(DATABASE_URL);
+const sslMode = url.searchParams.get('sslmode') || 'prefer';
+
+let sslConfig = false;
+if (sslMode === 'require' || sslMode === 'verify-ca' || sslMode === 'verify-full') {
+  sslConfig = { rejectUnauthorized: false };
+} else if (sslMode === 'prefer') {
+  // prefer模式：先尝试SSL，失败则使用非SSL
+  sslConfig = { rejectUnauthorized: false };
+}
+
 const pool = new Pool({
   connectionString: DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  connectionTimeoutMillis: 30000, // 增加到30秒
+  ssl: sslConfig,
+  connectionTimeoutMillis: 30000,
   query_timeout: 30000,
   statement_timeout: 30000,
 });
