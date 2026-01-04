@@ -13,10 +13,10 @@ import type {
 } from '../types';
 import { QAStatus as QAStatusEnum } from '../types';
 
-// 根据环境变量配置 API 地址
-// 开发环境：使用相对路径，Vite 会代理到本地后端
-// 生产环境：使用 Vercel Functions（/api/...）
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+// 使用 Vercel Functions（相对路径）
+// 开发环境：Vite 代理到本地（如果需要本地测试）
+// 生产环境：直接调用 Vercel Functions
+const API_BASE_URL = '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

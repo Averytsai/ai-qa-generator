@@ -6,14 +6,15 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://127.0.0.1:8000',  // 使用IPv4地址避免IPv6连接问题
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path,
-      },
-    },
+    // 本地开发时，如果需要测试 Vercel Functions，可以使用代理
+    // 或者直接使用 vercel dev 命令来运行本地 Functions
+    // proxy: {
+    //   '/api': {
+    //     target: 'http://localhost:3000',  // Vercel dev 默认端口
+    //     changeOrigin: true,
+    //     secure: false,
+    //   },
+    // },
   },
 })
 
