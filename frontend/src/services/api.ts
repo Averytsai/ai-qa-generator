@@ -14,8 +14,8 @@ import type {
 
 // 根据环境变量配置 API 地址
 // 开发环境：使用相对路径，Vite 会代理到本地后端
-// 生产环境：使用环境变量 VITE_API_BASE_URL，如果没有则使用相对路径
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+// 生产环境：使用 Vercel Functions（/api/...）
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -28,16 +28,10 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     console.log('API請求：', config.method?.toUpperCase(), config.url, config.data);
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:28',message:'Request interceptor - before send',data:{method:config.method,url:config.url,baseURL:config.baseURL,data:config.data},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     return config;
   },
   (error) => {
     console.error('API請求錯誤：', error);
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:32',message:'Request interceptor error',data:{error:error.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     return Promise.reject(error);
   }
 );
@@ -72,25 +66,18 @@ export const categoryApi = {
    */
   getCategories: async (): Promise<Category[]> => {
     const response: any = await api.get('/categories');
-    console.log('分類API原始響應：', response);
     
-    // API響應攔截器已經返回了response.data，所以response就是後端返回的完整數據
-    // 後端返回格式：{ success: true, data: { categories: [...] } }
-    // 所以response = { success: true, data: { categories: [...] } }
+    // Vercel Functions 返回格式：{ success: true, data: { categories: [...] } }
     if (response?.data?.categories && Array.isArray(response.data.categories)) {
-      console.log('從response.data.categories獲取分類：', response.data.categories);
       return response.data.categories;
     }
     
-    // 如果數據結構不同，嘗試其他路徑
+    // 向后兼容
     if (Array.isArray(response?.categories)) {
-      console.log('從response.categories獲取分類：', response.categories);
       return response.categories;
     }
     
-    // 如果response本身就是數組（向後兼容）
     if (Array.isArray(response)) {
-      console.log('response本身就是數組：', response);
       return response;
     }
     
@@ -114,25 +101,16 @@ export const generatorApi = {
    * 生成問答對
    */
   generate: async (request: GenerateRequest) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:79',message:'generatorApi.generate - before call',data:{request},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
     try {
-      const result = await api.post('/generator/generate', request);
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:82',message:'generatorApi.generate - success',data:{resultType:typeof result,resultKeys:result?Object.keys(result):null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
+      const result = await api.post('/generate', request);
       return result;
     } catch (error: any) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:87',message:'generatorApi.generate - catch error',data:{errorMessage:error.message,errorResponse:error.response},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       throw error;
     }
   },
 
   /**
-   * 獲取生成歷史
+   * 獲取生成歷史（前端本地存储）
    */
   getHistory: async (params?: {
     category?: QACategory;
@@ -140,7 +118,32 @@ export const generatorApi = {
     page?: number;
     page_size?: number;
   }): Promise<{ items: QAPair[]; total: number; page: number; page_size: number; total_pages: number }> => {
-    return await api.get('/generator/history', { params });
+    // 从 localStorage 读取历史记录
+    const stored = localStorage.getItem('qa_history');
+    let allItems: QAPair[] = stored ? JSON.parse(stored) : [];
+    
+    // 过滤
+    if (params?.category) {
+      allItems = allItems.filter(item => item.category === params.category);
+    }
+    if (params?.status) {
+      allItems = allItems.filter(item => item.status === params.status);
+    }
+    
+    // 分页
+    const page = params?.page || 1;
+    const pageSize = params?.page_size || 10;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const items = allItems.slice(start, end);
+    
+    return {
+      items,
+      total: allItems.length,
+      page,
+      page_size: pageSize,
+      total_pages: Math.ceil(allItems.length / pageSize),
+    };
   },
 };
 
@@ -151,15 +154,29 @@ export const reviewerApi = {
   /**
    * 審查單個問答對
    */
-  review: async (qaPairId: string): Promise<ReviewResponse> => {
-    return await api.post('/reviewer/review', { qa_pair_id: qaPairId });
+  review: async (qaPair: { id: string; question: string; answer: string }): Promise<ReviewResponse> => {
+    return await api.post('/review', {
+      qa_pair_id: qaPair.id,
+      question: qaPair.question,
+      answer: qaPair.answer,
+    });
   },
 
   /**
-   * 批量審查
+   * 批量審查（逐个调用）
    */
-  batchReview: async (qaPairIds: string[]) => {
-    return await api.post('/reviewer/batch-review', { qa_pair_ids: qaPairIds });
+  batchReview: async (qaPairs: Array<{ id: string; question: string; answer: string }>) => {
+    const results = await Promise.all(
+      qaPairs.map(qaPair => reviewerApi.review(qaPair))
+    );
+    return {
+      success: true,
+      data: {
+        reviews: results,
+        total: results.length,
+        passed: results.filter(r => r.passed).length,
+      },
+    };
   },
 };
 
@@ -168,21 +185,61 @@ export const reviewerApi = {
  */
 export const feedbackApi = {
   /**
-   * 提交反饋
+   * 提交反饋（前端本地存储）
    */
   submit: async (request: FeedbackSubmitRequest) => {
-    return await api.post('/feedback/submit', request);
+    // 保存到 localStorage
+    const stored = localStorage.getItem('qa_feedback');
+    const feedbacks = stored ? JSON.parse(stored) : [];
+    feedbacks.push({
+      ...request,
+      id: `feedback-${Date.now()}`,
+      created_at: new Date().toISOString(),
+    });
+    localStorage.setItem('qa_feedback', JSON.stringify(feedbacks));
+    
+    return {
+      success: true,
+      data: {
+        feedback_id: `feedback-${Date.now()}`,
+        message: '反馈已提交',
+      },
+    };
   },
 
   /**
-   * 獲取待審查列表
+   * 獲取待審查列表（从本地存储）
    */
   getPending: async (params?: {
     category?: QACategory;
     page?: number;
     page_size?: number;
   }): Promise<{ items: QAPair[]; total: number; page: number; page_size: number; total_pages: number }> => {
-    return await api.get('/feedback/pending', { params });
+    const stored = localStorage.getItem('qa_history');
+    let allItems: QAPair[] = stored ? JSON.parse(stored) : [];
+    
+    // 只返回 pending 状态的
+    allItems = allItems.filter(item => item.status === 'pending');
+    
+    // 过滤
+    if (params?.category) {
+      allItems = allItems.filter(item => item.category === params.category);
+    }
+    
+    // 分页
+    const page = params?.page || 1;
+    const pageSize = params?.page_size || 10;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const items = allItems.slice(start, end);
+    
+    return {
+      items,
+      total: allItems.length,
+      page,
+      page_size: pageSize,
+      total_pages: Math.ceil(allItems.length / pageSize),
+    };
   },
 };
 

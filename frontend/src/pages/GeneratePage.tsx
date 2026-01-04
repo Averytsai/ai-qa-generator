@@ -50,10 +50,31 @@ const GeneratePage = () => {
 
       console.log('生成響應：', response)
 
-      if (response && response.qa_pairs && response.qa_pairs.length > 0) {
-        setQaPairs(response.qa_pairs)
-        message.success(`成功生成 ${response.qa_pairs.length} 個問答對`)
+      if (response && response.data && response.data.qa_pairs && response.data.qa_pairs.length > 0) {
+        const newQaPairs = response.data.qa_pairs
+        setQaPairs(newQaPairs)
+        
+        // 保存到 localStorage
+        const stored = localStorage.getItem('qa_history')
+        const history = stored ? JSON.parse(stored) : []
+        history.unshift(...newQaPairs)
+        localStorage.setItem('qa_history', JSON.stringify(history))
+        
+        message.success(`成功生成 ${newQaPairs.length} 個問答對`)
         // 重新載入歷史記錄
+        loadHistory()
+      } else if (response && response.qa_pairs && response.qa_pairs.length > 0) {
+        // 向后兼容旧格式
+        const newQaPairs = response.qa_pairs
+        setQaPairs(newQaPairs)
+        
+        // 保存到 localStorage
+        const stored = localStorage.getItem('qa_history')
+        const history = stored ? JSON.parse(stored) : []
+        history.unshift(...newQaPairs)
+        localStorage.setItem('qa_history', JSON.stringify(history))
+        
+        message.success(`成功生成 ${newQaPairs.length} 個問答對`)
         loadHistory()
       } else {
         message.warning('生成完成，但沒有返回問答對')
