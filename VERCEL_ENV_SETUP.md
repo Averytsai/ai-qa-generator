@@ -13,7 +13,8 @@
 4. 点击 **Add New**
 5. 填写：
    - **Name**: `DATABASE_URL`
-   - **Value**: `postgresql://user:password@tw-07.access.glows.ai:23793/qa_generator_db?sslmode=require`
+   - **Value**: `postgresql://postgres:1234@tw-07.access.glows.ai:[端口]/qa_generator_db?sslmode=require`
+   - **注意**：将`[端口]`替换为实际的外部端口（5432或配置的转发端口）
    - **Environment**: 选择所有环境（Production, Preview, Development）
 6. 点击 **Save**
 
@@ -121,7 +122,12 @@ postgresql://[用户名]:[密码]@[主机]:[端口]/[数据库名]?sslmode=requi
 
 示例：
 ```
-postgresql://user:password@tw-07.access.glows.ai:23793/qa_generator_db?sslmode=require
+postgresql://postgres:1234@tw-07.access.glows.ai:[端口]/qa_generator_db?sslmode=require
+
+**注意**：
+- 用户名：`postgres`
+- 密码：`1234`
+- 将`[端口]`替换为实际的外部端口（5432或配置的转发端口）
 ```
 
 ### OPENAI_API_KEY
