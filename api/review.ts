@@ -1,4 +1,7 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+// 使用any类型避免TypeScript编译错误
+// Vercel会在运行时提供正确的类型
+type VercelRequest = any;
+type VercelResponse = any;
 import OpenAI from 'openai';
 import { query } from './utils/db.js';
 

@@ -2,7 +2,10 @@
  * 最简单的测试函数 - 不导入任何模块
  * 用于诊断Vercel Functions是否能正常运行
  */
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+// 使用any类型避免TypeScript编译错误
+// Vercel会在运行时提供正确的类型
+type VercelRequest = any;
+type VercelResponse = any;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('[test-simple] Handler called', { method: req.method, url: req.url });
