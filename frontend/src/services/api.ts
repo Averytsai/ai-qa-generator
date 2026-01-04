@@ -10,7 +10,7 @@ import type {
   QACategory,
   QAStatus,
 } from '../types';
-import { QAStatus as QAStatusEnum } from '../types';
+import { QAStatus as QAStatusEnum, ReviewAction } from '../types';
 
 // 使用 Vercel Functions（相对路径）
 // 开发环境：Vite 代理到本地（如果需要本地测试）
@@ -127,7 +127,38 @@ export const generatorApi = {
       allItems = allItems.filter(item => item.category === params.category);
     }
     if (params?.status) {
-      allItems = allItems.filter(item => item.status === params.status);
+      const statusFilter = params.status as any;
+      allItems = allItems.filter(item => {
+        const itemStatus = item.status as any;
+        // 支持多种状态格式比较
+        if (itemStatus === statusFilter) {
+          return true;
+        }
+        // 字符串比较
+        if (String(itemStatus) === String(statusFilter)) {
+          return true;
+        }
+        // 枚举值比较
+        if (statusFilter === QAStatusEnum.APPROVED) {
+          return itemStatus === QAStatusEnum.APPROVED ||
+                 itemStatus === '已通過' ||
+                 itemStatus === 'approved' ||
+                 String(itemStatus).toLowerCase() === 'approved';
+        }
+        if (statusFilter === QAStatusEnum.REJECTED) {
+          return itemStatus === QAStatusEnum.REJECTED ||
+                 itemStatus === '已拒絕' ||
+                 itemStatus === 'rejected' ||
+                 String(itemStatus).toLowerCase() === 'rejected';
+        }
+        if (statusFilter === QAStatusEnum.MODIFIED) {
+          return itemStatus === QAStatusEnum.MODIFIED ||
+                 itemStatus === '已修改' ||
+                 itemStatus === 'modified' ||
+                 String(itemStatus).toLowerCase() === 'modified';
+        }
+        return false;
+      });
     }
     
     // 分页
@@ -192,7 +223,7 @@ export const feedbackApi = {
    * 提交反饋（前端本地存储）
    */
   submit: async (request: FeedbackSubmitRequest) => {
-    // 保存到 localStorage
+    // 保存反馈到 localStorage
     const stored = localStorage.getItem('qa_feedback');
     const feedbacks = stored ? JSON.parse(stored) : [];
     feedbacks.push({
@@ -201,6 +232,40 @@ export const feedbackApi = {
       created_at: new Date().toISOString(),
     });
     localStorage.setItem('qa_feedback', JSON.stringify(feedbacks));
+    
+    // 更新 qa_history 中对应项的状态
+    const historyStored = localStorage.getItem('qa_history');
+    if (historyStored) {
+      const history: QAPair[] = JSON.parse(historyStored);
+      const index = history.findIndex(item => item.id === request.qa_pair_id);
+      
+      if (index !== -1) {
+        const updatedItem = { ...history[index] };
+        
+        // 根据操作类型更新状态和内容
+        const action = request.action as any;
+        if (action === 'approve' || action === ReviewAction.APPROVE) {
+          updatedItem.status = QAStatusEnum.APPROVED;
+        } else if (action === 'reject' || action === ReviewAction.REJECT) {
+          updatedItem.status = QAStatusEnum.REJECTED;
+        } else if (action === 'modify' || action === ReviewAction.MODIFY) {
+          // 修改后，如果用户选择通过，状态应该是 APPROVED，否则是 MODIFIED
+          // 但根据业务逻辑，修改后通常需要再次审查，所以先设为 MODIFIED
+          // 如果修改后直接通过，可以在这里处理
+          updatedItem.status = QAStatusEnum.MODIFIED;
+          if (request.modified_question) {
+            updatedItem.question = request.modified_question;
+          }
+          if (request.modified_answer) {
+            updatedItem.answer = request.modified_answer;
+          }
+        }
+        
+        updatedItem.updated_at = new Date().toISOString();
+        history[index] = updatedItem;
+        localStorage.setItem('qa_history', JSON.stringify(history));
+      }
+    }
     
     return {
       success: true,
