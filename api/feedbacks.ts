@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { query } from './utils/db';
+import { query } from './utils/db.js';
 
 // CORS 处理
 function setCorsHeaders(res: VercelResponse) {
@@ -37,7 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       // 开始事务：插入反馈并更新问答对状态
-      const { getClient } = await import('./utils/db');
+      const { getClient } = await import('./utils/db.js');
       const client = await getClient();
       
       try {

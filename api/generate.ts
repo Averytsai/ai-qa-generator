@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import OpenAI from 'openai';
-import { query } from './utils/db';
+import { query } from './utils/db.js';
 
 // 初始化 OpenAI 客户端
 const openai = new OpenAI({

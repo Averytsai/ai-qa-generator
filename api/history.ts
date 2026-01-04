@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { query } from './utils/db';
+import { query } from './utils/db.js';
 
 // CORS 处理
 function setCorsHeaders(res: VercelResponse) {
