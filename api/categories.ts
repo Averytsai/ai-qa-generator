@@ -1,11 +1,8 @@
-// #region agent log
-fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'categories.ts:1',message:'Module loading started',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-// #endregion
-
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // #region agent log
-fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'categories.ts:3',message:'@vercel/node imported successfully',data:{hasVercelNode:true},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+console.log('[categories.ts] Module loading started');
+console.log('[categories.ts] @vercel/node imported successfully');
 // #endregion
 
 // 分类数据（静态数据）
@@ -44,7 +41,7 @@ const CATEGORIES = [
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'categories.ts:37',message:'Handler function called',data:{method:req.method,url:req.url},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+  console.log('[categories.ts] Handler function called', { method: req.method, url: req.url });
   // #endregion
   
   // CORS 处理
@@ -54,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'OPTIONS') {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'categories.ts:45',message:'OPTIONS request handled',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    console.log('[categories.ts] OPTIONS request handled');
     // #endregion
     return res.status(200).end();
   }
@@ -62,14 +59,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 只允许 GET 请求
   if (req.method !== 'GET') {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'categories.ts:50',message:'Method not allowed',data:{method:req.method},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    console.log('[categories.ts] Method not allowed', { method: req.method });
     // #endregion
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'categories.ts:53',message:'Before returning categories',data:{categoriesCount:CATEGORIES.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    console.log('[categories.ts] Before returning categories', { categoriesCount: CATEGORIES.length });
     // #endregion
     
     return res.status(200).json({
@@ -80,7 +77,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error: any) {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'categories.ts:60',message:'Error caught in handler',data:{error:error.message,stack:error.stack?.substring(0,200)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    console.error('[categories.ts] Error caught in handler', { error: error.message, stack: error.stack?.substring(0, 200) });
     // #endregion
     console.error('获取分类失败:', error);
     return res.status(500).json({

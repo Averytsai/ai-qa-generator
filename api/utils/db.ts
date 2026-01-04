@@ -2,19 +2,19 @@
  * PostgreSQL 数据库连接和工具函数
  */
 // #region agent log
-fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'db.ts:1',message:'db.ts module loading',data:{hasDatabaseUrl:!!process.env.DATABASE_URL},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+console.log('[db.ts] Module loading started', { hasDatabaseUrl: !!process.env.DATABASE_URL });
 // #endregion
 
 import { Pool, QueryResult } from 'pg';
 
 // #region agent log
-fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'db.ts:5',message:'pg module imported',data:{hasPg:true},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+console.log('[db.ts] pg module imported successfully');
 // #endregion
 
 // 检查数据库连接字符串
 if (!process.env.DATABASE_URL) {
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'db.ts:9',message:'DATABASE_URL not set',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+  console.error('[db.ts] DATABASE_URL not set');
   // #endregion
   console.error('❌ DATABASE_URL 环境变量未设置！');
   console.error('请在 Vercel Dashboard 中设置 DATABASE_URL 环境变量');
@@ -52,7 +52,7 @@ const getSSLConfig = () => {
 
 // 创建连接池
 // #region agent log
-fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'db.ts:42',message:'Before creating pool',data:{hasDatabaseUrl:!!process.env.DATABASE_URL,sslConfig:getSSLConfig()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+console.log('[db.ts] Before creating pool', { hasDatabaseUrl: !!process.env.DATABASE_URL, sslConfig: getSSLConfig() });
 // #endregion
 
 const pool = new Pool({
@@ -66,7 +66,7 @@ const pool = new Pool({
 });
 
 // #region agent log
-fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'db.ts:51',message:'Pool created successfully',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+console.log('[db.ts] Pool created successfully');
 // #endregion
 
 /**

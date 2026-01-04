@@ -23,7 +23,7 @@ function setCorsHeaders(res: VercelResponse) {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'qa-pairs.ts:11',message:'qa-pairs handler called',data:{method:req.method,url:req.url,query:req.query},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+  console.log('[qa-pairs.ts] Handler function called', { method: req.method, url: req.url, query: req.query });
   // #endregion
   
   setCorsHeaders(res);
@@ -34,7 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'qa-pairs.ts:19',message:'Before database query',data:{method:req.method},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    console.log('[qa-pairs.ts] Before database query', { method: req.method });
     // #endregion
     // GET - 获取问答对列表
     if (req.method === 'GET') {
@@ -215,7 +215,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error: any) {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c43600db-e18f-4100-af93-79b30b6f97fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'qa-pairs.ts:196',message:'Error caught in qa-pairs handler',data:{error:error.message,code:error.code,stack:error.stack?.substring(0,300)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    console.error('[qa-pairs.ts] Error caught in handler', { error: error.message, code: error.code, stack: error.stack?.substring(0, 300) });
     // #endregion
     
     console.error('❌ QA Pairs API错误:', {
