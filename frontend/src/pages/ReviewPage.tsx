@@ -50,15 +50,21 @@ const ReviewPage = () => {
     setReviewing(true)
 
     try {
-      const result = await reviewerApi.review({
+      const result: any = await reviewerApi.review({
         id: qaPair.id,
         question: qaPair.question,
         answer: qaPair.answer,
       })
-      setReviewResult(result)
+      
+      // API 返回格式：{ success: true, data: {...} }
+      // 响应拦截器已经返回了 response.data，所以 result 就是 { success: true, data: {...} }
+      // 如果 result 有 data 属性，使用 data，否则直接使用 result
+      const reviewData = (result && typeof result === 'object' && 'data' in result) ? result.data : result;
+      setReviewResult(reviewData)
       message.success('審查結果完成')
       loadQAPairs() // 重新載入列表
     } catch (error: any) {
+      console.error('审查失败:', error);
       message.error(error.message || '審查結果失敗')
     } finally {
       setReviewing(false)

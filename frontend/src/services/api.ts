@@ -6,7 +6,6 @@ import type {
   QAPair,
   Category,
   GenerateRequest,
-  ReviewResponse,
   FeedbackSubmitRequest,
   QACategory,
   QAStatus,
@@ -155,12 +154,16 @@ export const reviewerApi = {
   /**
    * 審查單個問答對
    */
-  review: async (qaPair: { id: string; question: string; answer: string }): Promise<ReviewResponse> => {
-    return await api.post('/review', {
+  review: async (qaPair: { id: string; question: string; answer: string }): Promise<any> => {
+    const response: any = await api.post('/review', {
       qa_pair_id: qaPair.id,
       question: qaPair.question,
       answer: qaPair.answer,
     });
+    // API 返回格式：{ success: true, data: {...} }
+    // 响应拦截器已经返回了 response.data，所以 response 就是 { success: true, data: {...} }
+    // 返回 data 部分，如果没有 data 则直接返回 response
+    return (response && typeof response === 'object' && 'data' in response) ? response.data : response;
   },
 
   /**
