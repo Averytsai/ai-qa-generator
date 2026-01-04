@@ -26,11 +26,6 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       label: '生成問答',
     },
     {
-      key: '/review',
-      icon: <CheckCircleOutlined />,
-      label: 'AI審核(測試中)',
-    },
-    {
       key: '/feedback',
       icon: <EditOutlined />,
       label: '人工審查',
@@ -44,6 +39,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       key: '/analytics',
       icon: <BarChartOutlined />,
       label: '統計分析',
+    },
+    {
+      key: '/review',
+      icon: <CheckCircleOutlined />,
+      label: 'AI審核(測試中)',
     },
   ]
 
