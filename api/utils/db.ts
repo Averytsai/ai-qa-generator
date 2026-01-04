@@ -13,20 +13,27 @@ if (!process.env.DATABASE_URL) {
 const getSSLConfig = () => {
   if (!process.env.DATABASE_URL) return false;
   
-  const url = new URL(process.env.DATABASE_URL);
-  const sslMode = url.searchParams.get('sslmode') || 'prefer';
-  
-  // 根据sslmode决定SSL配置
-  if (sslMode === 'disable') {
-    return false;
-  } else if (sslMode === 'require' || sslMode === 'verify-ca' || sslMode === 'verify-full') {
-    return { rejectUnauthorized: false };
-  } else if (sslMode === 'prefer' || sslMode === 'allow') {
-    // prefer/allow模式：先尝试SSL，失败则使用非SSL
-    return { rejectUnauthorized: false };
+  try {
+    const url = new URL(process.env.DATABASE_URL);
+    const sslMode = url.searchParams.get('sslmode') || 'prefer';
+    
+    // 根据sslmode决定SSL配置
+    if (sslMode === 'disable') {
+      return false;
+    } else if (sslMode === 'require' || sslMode === 'verify-ca' || sslMode === 'verify-full') {
+      // require模式：使用SSL，但不验证证书（因为可能是自签名证书）
+      return { rejectUnauthorized: false };
+    } else if (sslMode === 'prefer' || sslMode === 'allow') {
+      // prefer/allow模式：先尝试SSL，失败则使用非SSL
+      // 对于自签名证书，设置为不验证
+      return { rejectUnauthorized: false };
+    }
+  } catch (error) {
+    // 如果URL解析失败，使用默认配置
+    console.warn('Failed to parse DATABASE_URL:', error);
   }
   
-  // 默认：生产环境使用SSL
+  // 默认：根据环境决定
   return process.env.NODE_ENV === 'production' 
     ? { rejectUnauthorized: false } 
     : false;
