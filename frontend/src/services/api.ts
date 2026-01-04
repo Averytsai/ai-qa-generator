@@ -219,8 +219,26 @@ export const feedbackApi = {
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.page_size) queryParams.append('page_size', params.page_size.toString());
 
-    const response: any = await api.get(`/qa-pairs?${queryParams.toString()}`);
-    return response?.data || { items: [], total: 0, page: 1, page_size: 10, total_pages: 0 };
+    try {
+      const response: any = await api.get(`/qa-pairs?${queryParams.toString()}`);
+      console.log('getPending API響應：', response);
+      
+      // API返回格式：{ success: true, data: { items: [], total: 0, ... } }
+      if (response?.success && response?.data) {
+        return response.data;
+      }
+      
+      // 向后兼容：如果直接返回data
+      if (response?.data && !response.success) {
+        return response.data;
+      }
+      
+      console.warn('getPending API響應格式異常：', response);
+      return { items: [], total: 0, page: params?.page || 1, page_size: params?.page_size || 10, total_pages: 0 };
+    } catch (error: any) {
+      console.error('getPending API錯誤：', error);
+      throw error;
+    }
   },
 };
 

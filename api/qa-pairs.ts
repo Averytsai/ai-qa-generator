@@ -194,9 +194,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error: any) {
-    console.error('API错误:', error);
+    console.error('❌ QA Pairs API错误:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail,
+      hint: error.hint,
+      stack: error.stack?.substring(0, 500)
+    });
+    
+    // 如果是数据库连接错误，提供更详细的错误信息
+    if (error.message?.includes('DATABASE_URL') || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+      return res.status(500).json({
+        error: '数据库连接失败。请检查 DATABASE_URL 环境变量是否正确设置。',
+        details: error.message,
+        hint: '请在 Vercel Dashboard 的 Environment Variables 中设置 DATABASE_URL'
+      });
+    }
+    
     return res.status(500).json({
       error: error.message || '服务器错误',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }
