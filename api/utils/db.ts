@@ -9,15 +9,38 @@ if (!process.env.DATABASE_URL) {
   console.error('请在 Vercel Dashboard 中设置 DATABASE_URL 环境变量');
 }
 
+// 解析连接字符串，根据sslmode调整SSL配置
+const getSSLConfig = () => {
+  if (!process.env.DATABASE_URL) return false;
+  
+  const url = new URL(process.env.DATABASE_URL);
+  const sslMode = url.searchParams.get('sslmode') || 'prefer';
+  
+  // 根据sslmode决定SSL配置
+  if (sslMode === 'disable') {
+    return false;
+  } else if (sslMode === 'require' || sslMode === 'verify-ca' || sslMode === 'verify-full') {
+    return { rejectUnauthorized: false };
+  } else if (sslMode === 'prefer' || sslMode === 'allow') {
+    // prefer/allow模式：先尝试SSL，失败则使用非SSL
+    return { rejectUnauthorized: false };
+  }
+  
+  // 默认：生产环境使用SSL
+  return process.env.NODE_ENV === 'production' 
+    ? { rejectUnauthorized: false } 
+    : false;
+};
+
 // 创建连接池
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('sslmode=require') 
-    ? { rejectUnauthorized: false } 
-    : false,
+  ssl: getSSLConfig(),
   max: 20, // 最大连接数
   idleTimeoutMillis: 30000, // 空闲连接超时
-  connectionTimeoutMillis: 10000, // 连接超时（增加到10秒）
+  connectionTimeoutMillis: 15000, // 连接超时（增加到15秒）
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
 });
 
 /**
