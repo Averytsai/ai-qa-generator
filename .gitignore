@@ -73,3 +73,10 @@ alembic/versions/*.pyc
 .DS_Store
 Thumbs.db
 
+# Node.js
+node_modules/
+api/node_modules/
+frontend/node_modules/
+package-lock.json
+api/package-lock.json
+
