@@ -68,16 +68,16 @@ const KnowledgeBasePage = () => {
     loadKnowledgeBase()
   }, [selectedCategory, searchText])
 
-  // 分类映射：中文 → 英文
+  // 分类映射：系统分类 → 导出JSON分类（中文）
   const categoryMap: Record<string, string> = {
-    '通用知識': 'General',
-    '技術規範': 'Technical',
-    '技術流程': 'Technical',
-    '故障排除': 'Troubleshooting',
-    '安全合規': 'Security',
-    '資安法規': 'Security',
-    '案例分享': 'CaseStudy',
-    '應用案例': 'CaseStudy',
+    '通用知識': '通用知識類',
+    '技術規範': '技術與流程',
+    '技術流程': '技術與流程',
+    '故障排除': '問題解決與故障排除類',
+    '安全合規': '平台政策、合規性與法規類',
+    '資安法規': '平台政策、合規性與法規類',
+    '案例分享': '應用場景與案例類',
+    '應用案例': '應用場景與案例類',
   }
 
   const handleExport = () => {
