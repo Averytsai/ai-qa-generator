@@ -9,6 +9,7 @@ import {
   Select,
   message,
 } from 'antd'
+import { DownloadOutlined } from '@ant-design/icons'
 import { generatorApi, categoryApi } from '../services/api'
 import { QAPair, QACategory, QAStatus } from '../types'
 import type { ColumnsType } from 'antd/es/table'
@@ -66,6 +67,53 @@ const KnowledgeBasePage = () => {
   useEffect(() => {
     loadKnowledgeBase()
   }, [selectedCategory, searchText])
+
+  // 分类映射：中文 → 英文
+  const categoryMap: Record<string, string> = {
+    '通用知識': 'General',
+    '技術規範': 'Technical',
+    '技術流程': 'Technical',
+    '故障排除': 'Troubleshooting',
+    '安全合規': 'Security',
+    '資安法規': 'Security',
+    '案例分享': 'CaseStudy',
+    '應用案例': 'CaseStudy',
+  }
+
+  const handleExport = () => {
+    if (qaPairs.length === 0) {
+      message.warning('沒有可導出的數據')
+      return
+    }
+
+    try {
+      // 轉換為指定格式
+      const exportData = qaPairs.map((qa) => ({
+        instruction: qa.question,
+        output: qa.answer,
+        type: categoryMap[qa.category] || qa.category,
+      }))
+
+      // 轉換為 JSON 字符串
+      const jsonString = JSON.stringify(exportData, null, 2)
+
+      // 創建 Blob 並下載
+      const blob = new Blob([jsonString], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `knowledge_base_${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      message.success(`成功導出 ${qaPairs.length} 條問答對`)
+    } catch (error: any) {
+      console.error('導出失敗:', error)
+      message.error('導出失敗：' + (error.message || '未知錯誤'))
+    }
+  }
 
   const columns: ColumnsType<QAPair> = [
     {
@@ -130,6 +178,14 @@ const KnowledgeBasePage = () => {
             />
             <Button onClick={loadKnowledgeBase} loading={loading}>
               刷新
+            </Button>
+            <Button
+              type="primary"
+              icon={<DownloadOutlined />}
+              onClick={handleExport}
+              disabled={qaPairs.length === 0}
+            >
+              匯出 JSON
             </Button>
           </Space>
         }
