@@ -50,7 +50,11 @@ const ReviewPage = () => {
     setReviewing(true)
 
     try {
-      const result = await reviewerApi.review(qaPair.id)
+      const result = await reviewerApi.review({
+        id: qaPair.id,
+        question: qaPair.question,
+        answer: qaPair.answer,
+      })
       setReviewResult(result)
       message.success('審查結果完成')
       loadQAPairs() // 重新載入列表
@@ -69,8 +73,16 @@ const ReviewPage = () => {
 
     setReviewing(true)
     try {
-      const result: any = await reviewerApi.batchReview(selectedRowKeys)
-      message.success(`批量審查結果完成：通過 ${result.summary?.passed || 0}，失敗 ${result.summary?.failed || 0}`)
+      // 根据选中的 ID 找到对应的 QAPair 对象
+      const selectedQAPairs = qaPairs.filter(qa => selectedRowKeys.includes(qa.id))
+      const qaPairsForReview = selectedQAPairs.map(qa => ({
+        id: qa.id,
+        question: qa.question,
+        answer: qa.answer,
+      }))
+      
+      const result: any = await reviewerApi.batchReview(qaPairsForReview)
+      message.success(`批量審查結果完成：通過 ${result.data?.passed || 0}，總數 ${result.data?.total || 0}`)
       setSelectedRowKeys([])
       loadQAPairs()
     } catch (error: any) {

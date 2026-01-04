@@ -11,6 +11,7 @@ import type {
   QACategory,
   QAStatus,
 } from '../types';
+import { QAStatus as QAStatusEnum } from '../types';
 
 // 根据环境变量配置 API 地址
 // 开发环境：使用相对路径，Vite 会代理到本地后端
@@ -219,7 +220,13 @@ export const feedbackApi = {
     let allItems: QAPair[] = stored ? JSON.parse(stored) : [];
     
     // 只返回 pending 状态的
-    allItems = allItems.filter(item => item.status === 'pending');
+    allItems = allItems.filter(item => {
+      const status = item.status as any;
+      return status === QAStatusEnum.PENDING_REVIEW || 
+             status === 'pending' || 
+             status === '待審查' ||
+             String(status) === 'pending';
+    });
     
     // 过滤
     if (params?.category) {
