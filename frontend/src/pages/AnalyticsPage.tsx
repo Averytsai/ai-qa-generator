@@ -43,7 +43,7 @@ const AnalyticsPage = () => {
       if (total > 0 || items.length > 0) {
         // 統計狀態
         const pending = items.filter(
-          (qa: any) => qa.status === '待審查' || qa.status === '已審查'
+          (qa: any) => qa.status === '待審查' || qa.status === 'AI已審查'
         ).length
         const approved = items.filter(
           (qa: any) => qa.status === '已通過'

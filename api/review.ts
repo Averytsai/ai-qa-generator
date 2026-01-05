@@ -119,7 +119,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       try {
         await query(
           'UPDATE qa_pairs SET reviewer_score = $1, reviewed_at = $2, status = $3 WHERE id = $4',
-          [reviewerScore, reviewedAt, reviewResult.passed !== false ? '已審查' : '待審查', qa_pair_id]
+          [reviewerScore, reviewedAt, reviewResult.passed !== false ? 'AI已審查' : '待審查', qa_pair_id]
         );
       } catch (dbError) {
         console.error('更新数据库失败:', dbError);

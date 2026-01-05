@@ -158,7 +158,7 @@ const ReviewPage = () => {
       render: (status: string) => {
         const colorMap: Record<string, string> = {
           待審查: 'orange',
-          已審查: 'blue',
+          'AI已審查': 'blue',
           已通過: 'green',
           已拒絕: 'red',
         }

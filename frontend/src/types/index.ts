@@ -13,7 +13,7 @@ export enum QACategory {
 export enum QAStatus {
   GENERATING = "生成中",
   PENDING_REVIEW = "待審查",
-  REVIEWED = "已審查",
+  REVIEWED = "AI已審查",
   APPROVED = "已通過",
   REJECTED = "已拒絕",
   MODIFIED = "已修改",
