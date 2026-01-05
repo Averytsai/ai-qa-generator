@@ -5,9 +5,6 @@ import 'dotenv/config';
 // DB
 import { query } from '../api/utils/db';
 
-// ✅ 把 generate handler 掛進來
-import generateHandler from '../api/generate';
-
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -266,10 +263,6 @@ app.delete('/api/qa-pairs', async (req, res) => {
     res.status(500).json({ success: false, error: e?.message ?? 'Server error' });
   }
 });
-
-// ✅ Generate API - POST / OPTIONS（接到 api/generate.ts）
-app.options('/api/generate', (req, res) => generateHandler(req, res));
-app.post('/api/generate', (req, res) => generateHandler(req, res));
 
 // Review API - POST（暫留 501，之後你要我也可以幫你做）
 app.post('/api/review', async (_req, res) => {
