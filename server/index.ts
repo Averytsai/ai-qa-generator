@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 
@@ -7,6 +7,35 @@ import { query } from '../api/utils/db';
 
 // ✅ 把 generate handler 掛進來
 import generateHandler from '../api/generate';
+
+// 適配器：轉換 Express 到 Vercel 類型
+function wrapVercelHandler(handler: (req: any, res: any) => Promise<any>) {
+  return async (req: Request, res: Response) => {
+    const vercelReq: any = {
+      method: req.method,
+      url: req.url,
+      query: {},
+      body: req.body,
+      headers: req.headers,
+      cookies: {},
+    };
+
+    // 轉換 query 參數
+    for (const [key, val] of Object.entries(req.query)) {
+      if (typeof val === 'string') vercelReq.query[key] = val;
+      else if (Array.isArray(val)) vercelReq.query[key] = val.filter((v): v is string => typeof v === 'string');
+    }
+
+    const vercelRes: any = {
+      status: (code: number) => { res.status(code); return vercelRes; },
+      json: (data: any) => { res.json(data); return vercelRes; },
+      setHeader: (name: string, value: string) => { res.setHeader(name, value); return vercelRes; },
+      end: () => { res.end(); return vercelRes; },
+    };
+
+    return handler(vercelReq, vercelRes);
+  };
+}
 
 const app = express();
 app.use(cors());
@@ -268,8 +297,9 @@ app.delete('/api/qa-pairs', async (req, res) => {
 });
 
 // ✅ Generate API - POST / OPTIONS（接到 api/generate.ts）
-app.options('/api/generate', (req, res) => generateHandler(req, res));
-app.post('/api/generate', (req, res) => generateHandler(req, res));
+const wrappedGenerate = wrapVercelHandler(generateHandler);
+app.options('/api/generate', wrappedGenerate);
+app.post('/api/generate', wrappedGenerate);
 
 // Review API - POST（暫留 501，之後你要我也可以幫你做）
 app.post('/api/review', async (_req, res) => {
