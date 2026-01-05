@@ -76,9 +76,7 @@ function getPool(): Pool {
   return pool;
 }
 
-// #region agent log
-console.log('[db.ts] Pool created successfully');
-// #endregion
+// 连接池将在第一次使用时创建
 
 /**
  * 执行SQL查询
