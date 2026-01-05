@@ -1,7 +1,5 @@
 // api/generate.ts
-type VercelRequest = any;
-type VercelResponse = any;
-
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import OpenAI from 'openai';
 import { query } from './utils/db';
 
