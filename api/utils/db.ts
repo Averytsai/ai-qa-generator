@@ -132,5 +132,19 @@ export async function getClient() {
   return client;
 }
 
-export { getPool as pool };
+// 导出pool对象，提供与Pool相同的接口
+export const pool = {
+  query: (text: string, params?: any[]) => {
+    return getPool().query(text, params);
+  },
+  connect: () => {
+    return getPool().connect();
+  },
+  end: () => {
+    if (pool) {
+      return getPool().end();
+    }
+    return Promise.resolve();
+  },
+};
 
