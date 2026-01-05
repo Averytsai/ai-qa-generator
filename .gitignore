@@ -35,6 +35,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# 備份文件
+*.backup
+.env.backup
+
 # IDE
 .vscode/
 .idea/

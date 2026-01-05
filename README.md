@@ -1,6 +1,6 @@
 # AI 問答集生成系統
 
-## 專案說明
+## 📋 專案說明
 
 AI問答集生成與審查系統，通過AI自動生成和審查機制，結合人工審核反饋，持續優化生成質量，為五大知識領域提供高質量的問答內容。
 
@@ -12,156 +12,109 @@ AI問答集生成與審查系統，通過AI自動生成和審查機制，結合�
 - 🧠 **持續學習**：基於人工反饋優化生成策略和提示詞模板
 - 📚 **五大知識領域**：通用知識、技術流程、故障排除、資安法規、應用案例
 
-## 專案結構
+## 🏗️ 專案架構
 
-```
-AI資料產生助手/
-├── app/                      # 應用程式主目錄
-│   ├── api/                  # API路由
-│   ├── core/                 # 核心業務邏輯
-│   ├── models/               # 資料庫模型
-│   ├── schemas/              # Pydantic模型
-│   ├── services/             # 服務層
-│   ├── utils/                # 工具函數
-│   ├── config.py             # 配置管理
-│   └── main.py               # FastAPI入口
-├── tests/                    # 測試
-├── scripts/                  # 腳本
-├── requirements/             # 依賴管理
-├── alembic/                  # 資料庫遷移
-├── DEVELOPMENT_RULES.md      # 開發規則
-├── GETTING_STARTED.md        # 開發啟動指南
-├── QUICK_START.md            # 快速開始
-└── README.md                 # 本文件
-```
+### 前端（Frontend）
+- **位置**: `frontend/`
+- **技術**: React 18 + TypeScript + Vite + Ant Design 5
+- **構建**: `npm run build` → `frontend/dist/`
 
-## 快速開始
+### 後端（Backend）
+- **位置**: `api/`
+- **技術**: TypeScript + Vercel Serverless Functions
+- **部署**: Vercel自動部署
 
-### 1. 環境配置
+### 數據庫（Database）
+- **類型**: PostgreSQL（外部服務器）
+- **連接**: 通過 `api/utils/db.ts` 連接
+- **環境變數**: `DATABASE_URL`（在Vercel Dashboard中設置）
+
+## 🚀 快速開始
+
+### 1. 安裝依賴
 
 ```bash
-# 創建虛擬環境
-python3 -m venv venv
-source venv/bin/activate  # macOS/Linux
-# 或 venv\Scripts\activate  # Windows
+# 安裝前端依賴
+cd frontend && npm install
 
-# 安裝依賴
-pip install -r requirements/dev.txt
+# 安裝後端依賴
+cd ../api && npm install
+```
 
-# 配置環境變數
+### 2. 環境變數配置
+
+複製環境變數模板：
+```bash
 cp env.example .env
-# 編輯 .env 填入實際配置值（至少需要 DATABASE_URL 和 AI API Key）
 ```
 
-### 2. 資料庫設置
+編輯 `.env` 文件，設置：
+- `DATABASE_URL` - PostgreSQL數據庫連接字符串
+- `OPENAI_API_KEY` - OpenAI API密鑰
+
+### 3. 本地開發
 
 ```bash
-# 創建資料庫
-createdb qa_generator_db
+# 前端開發服務器
+cd frontend && npm run dev
 
-# 配置 .env 中的 DATABASE_URL
-# DATABASE_URL=postgresql://user:password@localhost:5432/qa_generator_db
+# 後端使用 Vercel CLI（推薦）
+npm i -g vercel
+vercel dev
 ```
 
-### 3. 驗證環境
+### 4. 部署
 
+推送到 GitHub，Vercel 會自動部署：
 ```bash
-# 運行環境檢查腳本
-python scripts/check_env.py
+git push
 ```
 
-### 4. 啟動開發伺服器
+## 📁 專案結構
 
-```bash
-# 方式1: 使用啟動腳本
-./scripts/start.sh
-
-# 方式2: 直接使用 uvicorn
-uvicorn app.main:app --reload
-
-# 訪問 API 文檔
-# http://localhost:8000/docs
+```
+AI 資料產生助手/
+├── frontend/          # 前端代碼
+│   ├── src/          # React組件和頁面
+│   └── dist/         # 構建產物
+├── api/              # 後端API（Vercel Functions）
+│   ├── *.ts         # API端點
+│   └── utils/       # 工具函數（數據庫連接等）
+├── vercel.json       # Vercel部署配置
+├── package.json      # 根目錄package.json
+└── README.md         # 本文件
 ```
 
-## 開發前準備
+## 🔧 API端點
 
-1. **閱讀開發指南**
-   - 📖 [GETTING_STARTED.md](GETTING_STARTED.md) - 詳細的開發啟動指南
-   - ⚡ [QUICK_START.md](QUICK_START.md) - 5分鐘快速開始
-   - 📋 [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md) - 開發規範
+- `GET /api/categories` - 獲取分類列表
+- `GET /api/qa-pairs` - 獲取問答對列表
+- `POST /api/qa-pairs` - 創建問答對
+- `PUT /api/qa-pairs` - 更新問答對
+- `DELETE /api/qa-pairs` - 刪除問答對
+- `POST /api/generate` - AI生成問答對
+- `POST /api/review` - AI審查問答對
+- `POST /api/feedbacks` - 提交反饋
+- `GET /api/history` - 獲取歷史記錄
 
-2. **規劃開發階段**
-   - 在 `DEVELOPMENT_PHASES.md` 中規劃開發階段
-   - 確認開發順序和任務清單
+## 📝 環境變數
 
-3. **開始開發**
-   - 按照階段順序逐步開發
-   - 每個階段完成後進行測試和驗證
+### 必需
+- `DATABASE_URL` - PostgreSQL數據庫連接字符串
+- `OPENAI_API_KEY` - OpenAI API密鑰
 
-## 開發流程
+### 可選
+- `ANTHROPIC_API_KEY` - Anthropic API密鑰
+- `AZURE_OPENAI_ENDPOINT` - Azure OpenAI端點
+- `AZURE_OPENAI_API_KEY` - Azure OpenAI API密鑰
 
-### 1. 規劃階段
-- 定義功能需求
-- 劃分開發階段
-- 識別風險和依賴
+## 🛠️ 開發工具
 
-### 2. 開發階段
-- 一次只開發一個模組
-- 完成後立即測試
-- 確認無誤後再進行下一個
+- **前端**: Vite + React + TypeScript
+- **後端**: Vercel Serverless Functions + TypeScript
+- **數據庫**: PostgreSQL
+- **部署**: Vercel
 
-### 3. 整合階段
-- 整合各模組
-- 進行整合測試
-- 優化和調整
+## 📄 許可證
 
-### 4. 部署階段
-- 最終測試
-- 文件整理
-- 部署上線
-
-## 使用 AI 協作開發
-
-### 推薦流程
-
-1. **規劃階段 Prompt**
-   ```
-   請為 [功能名稱] 進行設計規劃
-   [使用 PROMPT_RULES.md 中的模板]
-   ```
-
-2. **開發階段 Prompt**
-   ```
-   請開發 [模組名稱] 模組
-   [使用 PROMPT_RULES.md 中的模板]
-   ```
-
-3. **審查階段 Prompt**
-   ```
-   請審查以下程式碼
-   [使用 PROMPT_RULES.md 中的模板]
-   ```
-
-## 重要提醒
-
-⚠️ **不要一次開發全部功能**
-- 按照階段逐步開發
-- 每個階段完成後確認
-- 避免累積錯誤
-
-⚠️ **遵循開發規則**
-- 程式碼風格要一致
-- 每個功能都要有測試
-- 錯誤處理要完善
-
-⚠️ **使用結構化 Prompt**
-- 明確描述需求
-- 提供驗證標準
-- 分步驟進行
-
-## 相關文件
-
-- [開發規則](DEVELOPMENT_RULES.md)
-- [Prompt 規則](PROMPT_RULES.md)
-- [開發階段規劃](DEVELOPMENT_PHASES.md)
-
+私有專案

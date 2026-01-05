@@ -32,12 +32,6 @@ class Settings(BaseSettings):
     # 模型配置
     default_model: str = Field(default="gpt-3.5-turbo", description="預設AI模型")
     
-    # CORS 配置
-    cors_origins: str = Field(
-        default="*", 
-        description="允許的CORS來源，多個用逗號分隔，*表示允許所有"
-    )
-    
     @validator('app_env')
     def validate_app_env(cls, v):
         """驗證環境變數"""
