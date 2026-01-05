@@ -140,9 +140,10 @@ export const pool = {
   connect: () => {
     return getPool().connect();
   },
-  end: () => {
+  end: async () => {
     if (pool) {
-      return getPool().end();
+      const poolInstance = getPool();
+      return poolInstance.end();
     }
     return Promise.resolve();
   },
