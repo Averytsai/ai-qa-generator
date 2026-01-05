@@ -24,7 +24,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const pg = await import('pg');
       info.pgModuleLoaded = true;
-      info.pgVersion = pg.version || 'unknown';
+      info.pgModuleType = typeof pg;
+      info.hasPool = typeof pg.Pool === 'function';
     } catch (e: any) {
       info.pgModuleError = e.message;
     }

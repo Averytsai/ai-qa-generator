@@ -56,14 +56,14 @@ console.log('[db.ts] Before creating pool', { hasDatabaseUrl: !!process.env.DATA
 // #endregion
 
 // 延迟创建连接池，避免模块加载时失败
-let pool: Pool | null = null;
+let poolInstance: Pool | null = null;
 
 function getPool(): Pool {
-  if (!pool) {
+  if (!poolInstance) {
     if (!process.env.DATABASE_URL) {
       throw new Error('DATABASE_URL 环境变量未设置');
     }
-    pool = new Pool({
+    poolInstance = new Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: getSSLConfig(),
       max: 20, // 最大连接数
@@ -73,7 +73,7 @@ function getPool(): Pool {
       keepAliveInitialDelayMillis: 10000,
     });
   }
-  return pool;
+  return poolInstance;
 }
 
 // 连接池将在第一次使用时创建
@@ -92,8 +92,8 @@ export async function query(text: string, params?: any[]): Promise<QueryResult> 
   }
   
   try {
-    const poolInstance = getPool();
-    const res = await poolInstance.query(text, params);
+    const pool = getPool();
+    const res = await pool.query(text, params);
     const duration = Date.now() - start;
     console.log('✅ Executed query', { text: text.substring(0, 100), duration, rows: res.rowCount });
     return res;
@@ -113,8 +113,8 @@ export async function query(text: string, params?: any[]): Promise<QueryResult> 
  * 获取客户端（用于事务）
  */
 export async function getClient() {
-  const poolInstance = getPool();
-  const client = await poolInstance.connect();
+  const pool = getPool();
+  const client = await pool.connect();
   const query = client.query.bind(client);
   const release = client.release.bind(client);
   
@@ -141,8 +141,7 @@ export const pool = {
     return getPool().connect();
   },
   end: async () => {
-    if (pool) {
-      const poolInstance = getPool();
+    if (poolInstance) {
       return poolInstance.end();
     }
     return Promise.resolve();
