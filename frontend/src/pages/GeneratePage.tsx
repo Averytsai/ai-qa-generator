@@ -160,7 +160,7 @@ const GeneratePage = () => {
       },
     },
     {
-      title: '審查評分',
+      title: 'AI評分',
       dataIndex: 'reviewer_score',
       key: 'reviewer_score',
       width: 100,

@@ -144,7 +144,7 @@ const KnowledgeBasePage = () => {
       render: (category: QACategory) => <Tag>{category}</Tag>,
     },
     {
-      title: '評分',
+      title: 'AI評分',
       key: 'score',
       width: 100,
       render: (_: any, record: QAPair) =>
